@@ -16,14 +16,11 @@
 
 class     avtLookupTable;
 class     avtPseudocolorFilter;
+class     avtPseudocolorGeometryFilter;
 class     avtShiftCenteringFilter;
 class     avtPseudocolorMapper;
-class     avtVariablePointGlyphMapper;
 class     avtVariableLegend;
 class     avtPolylineCleanupFilter;
-class     avtPolylineAddEndPointsFilter;
-class     avtPolylineToRibbonFilter;
-class     avtPolylineToTubeFilter;
 class     avtStaggeringFilter;
 
 // ****************************************************************************
@@ -46,37 +43,37 @@ class     avtStaggeringFilter;
 //    Hank Childs, Tue Mar 27 14:47:03 PST 2001
 //    Inherited from avtSurfaceDataPlot instead of avtPlot and added GetName.
 //
-//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001 
+//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001
 //    Made PseudocolorAttributes a data member so other methods can have access
-//    to the atts.  Added SetScaling, DefineLogLUT, and DefineSkewLUT methods. 
+//    to the atts.  Added SetScaling, DefineLogLUT, and DefineSkewLUT methods.
 //
 //    Kathleen Bonnell, Tue Apr 24 12:22:01 PDT 2001
-//    Added avtShiftCenterFilter. 
-//    
+//    Added avtShiftCenterFilter.
+//
 //    Jeremy Meredith, Tue Jun  5 20:45:02 PDT 2001
 //    Allow storage of attributes as a class member.
 //
 //    Brad Whitlock, Thu Jun 14 16:49:22 PST 2001
 //    Added SetColorTable method.
 //
-//    Kathleen Bonnell, Wed Aug 29 16:44:31 PDT 2001 
-//    Added avtLookupTable and previousMode. 
+//    Kathleen Bonnell, Wed Aug 29 16:44:31 PDT 2001
+//    Added avtLookupTable and previousMode.
 //
-//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001 
+//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001
 //    Added SetLimitsMode.  Removed SetMin, SetMax, SetMinOff, SetMaxOff.
 //
-//    Kathleen Bonnell, Wed Mar 13 12:04:53 PST 2002 
-//    Added private method SetLegendRanges.  
+//    Kathleen Bonnell, Wed Mar 13 12:04:53 PST 2002
+//    Added private method SetLegendRanges.
 //
-//    Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002 
-//    Removed previousMode, no longer needed. 
+//    Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002
+//    Removed previousMode, no longer needed.
 //
 //    Hank Childs, Sun Jun 23 12:19:23 PDT 2002
 //    Add support for point meshes.
 //
 //    Kathleen Bonnell, Tue Oct 22 08:33:26 PDT 2002
-//    Added ApplyRenderingTransformation. 
-//    
+//    Added ApplyRenderingTransformation.
+//
 //    Jeremy Meredith, Tue Dec 10 09:06:18 PST 2002
 //    Added GetSmoothingLevel to allow smoothing inside avtPlot.
 //
@@ -87,14 +84,14 @@ class     avtStaggeringFilter;
 //    Added EnhanceSpecification, and topoDim ivar.  Replaced glyphPoints
 //    and varMapper with glyphMapper.
 //
-//    Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
+//    Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004
 //    Added SetCellCountMultiplierForSRThreshold.
 //
-//    Kathleen Bonnell, Tue Nov  2 11:01:28 PST 2004 
+//    Kathleen Bonnell, Tue Nov  2 11:01:28 PST 2004
 //    Added avtPseudocolorFilter.
 //
 //    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
-//    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper. 
+//    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper.
 //
 //    Brad Whitlock, Thu Jul 21 15:25:44 PST 2005
 //    Added SetPointGlyphSize.
@@ -114,6 +111,10 @@ class     avtStaggeringFilter;
 //    Kathleen Biagas, Wed Aug 24 15:42:56 PDT 2016
 //    Change use of avtVariableMapper to avtPseudcolorMapper, a specialization
 //    of avtVariableMapper that utilizes a special vtk mapper.
+//
+//    Kathleen Biagas, Tue Aug 27 09:52:10 PDT 2019
+//    Remove GetBBoxSize, EnhanceSpecification, polyline* filters, glyphMapper.
+//    Renamed 'filter' as 'shiftFilter'. Added pcGeoFilter.
 //
 // ****************************************************************************
 
@@ -142,19 +143,16 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     void                        SetScaling(int, double);
 
   protected:
-    avtVariablePointGlyphMapper   *glyphMapper;
     avtPseudocolorMapper          *mapper;
     avtVariableLegend             *varLegend;
     avtLegend_p                    varLegendRefPtr;
     PseudocolorAttributes          atts;
     avtPseudocolorFilter          *pcfilter;
-
     avtPolylineCleanupFilter      *polylineCleanupFilter;
-    avtPolylineAddEndPointsFilter *polylineAddEndPointsFilter;
-    avtPolylineToRibbonFilter     *polylineToRibbonFilter;
-    avtPolylineToTubeFilter       *polylineToTubeFilter;
+    avtPseudocolorGeometryFilter  *pcGeoFilter;
+
     avtStaggeringFilter           *staggeringFilter;
-    avtShiftCenteringFilter       *filter;
+    avtShiftCenteringFilter       *shiftFilter;
     bool                           colorsInitialized;
     int                            topoDim;
     avtLookupTable                *avtLUT;
@@ -163,7 +161,6 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
-    // virtual avtContract_p       EnhanceSpecification(avtContract_p);
     virtual void                CustomizeBehavior(void);
     virtual int                 GetSmoothingLevel();
 
@@ -174,30 +171,6 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
 private:
     void                        SetLegendRanges(void);
     void                        SetPointGlyphSize();
-
-    double GetBBoxSize( double *bbox )
-    {
-        double vol = 1;
-        int    numDims = 0;
-        if (bbox[1] > bbox[0])
-        {
-            vol *= (bbox[1]-bbox[0]);
-            numDims++;
-        }
-        if (bbox[3] > bbox[2])
-        {
-            vol *= (bbox[3]-bbox[2]);
-            numDims++;
-        }
-        if (bbox[5] > bbox[4])
-        {
-            vol *= (bbox[5]-bbox[4]);
-            numDims++;
-        }
-
-        double length = pow(vol, 1.0/numDims);
-        return length;
-    }
 
 };
 

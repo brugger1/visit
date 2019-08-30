@@ -95,6 +95,10 @@ class   ColorAttribute;
 //    Kathleen Biagas, Thu Apr 13 09:05:05 PDT 2017
 //    Inherit from new avtMapperBase.
 //
+//    Kathleen Biagas, Tue Aug 27 08:24:58 PDT 2019
+//    Added CreateMapper with an int argument, for use by derived types needing
+//    the index for the mapper they create.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtMapper : public avtMapperBase
@@ -123,6 +127,7 @@ class PLOTTER_API avtMapper : public avtMapperBase
     virtual vtkAlgorithmOutput *InsertFilters(vtkDataSet *, int dom);
 
     virtual vtkDataSetMapper  *CreateMapper(void);
+    virtual vtkDataSetMapper  *CreateMapper(int);
 };
 
 

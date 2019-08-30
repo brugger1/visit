@@ -29,6 +29,10 @@ class vtkLookupTable;
 //  Creation:   August 17, 2016
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Aug 27 08:41:20 PDT 2019
+//    Made ivars protected instead of private. Rename lut to pmLUT. (There are
+//    mappers that derive both from this class and avtVariableMapper, which has
+//    a protected member 'lut').
 //
 // ****************************************************************************
 
@@ -62,7 +66,6 @@ class PLOTTER_API  avtPointMapper : virtual public avtMapper
 
     bool                       colorByScalar;
 
-  private:
     int                        spatialDim;
     double                     scale;
     std::string                scalingVarName;
@@ -71,7 +74,7 @@ class PLOTTER_API  avtPointMapper : virtual public avtMapper
     GlyphType                  glyphType;
     double                     pointSize;
     bool                       dataScaling;
-    vtkLookupTable            *lut;
+    vtkLookupTable            *pmLUT;
 
 };
 

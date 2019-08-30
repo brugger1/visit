@@ -21,10 +21,12 @@ using std::string;
 //
 //  Arguments:
 //
-//  Programmer: Kathleen Biagas 
-//  Creation:   August 17, 2016 
+//  Programmer: Kathleen Biagas
+//  Creation:   August 17, 2016
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Aug 27 08:47:48 PDT 2019
+//    lut was renamed to pmLUT.
 //
 // ****************************************************************************
 
@@ -39,7 +41,7 @@ avtPointMapper::avtPointMapper()
     spatialDim = 3;
     pointSize = 0;
 
-    lut = NULL;
+    pmLUT = NULL;
 }
 
 
@@ -56,6 +58,7 @@ avtPointMapper::avtPointMapper()
 avtPointMapper::~avtPointMapper()
 {
 }
+
 
 // ****************************************************************************
 //  Method: avtPointMapper::CreateMapper
@@ -88,6 +91,8 @@ avtPointMapper::CreateMapper()
 //  Creation:   August 17, 2016
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Aug 27 08:45:25 PDT 2019
+//    Ensure the mapper is a vtkPointGlyphMapper.  lut was renamed to pmLUT.
 //
 // ****************************************************************************
 
@@ -99,13 +104,16 @@ avtPointMapper::CustomizeMappers(void)
         if (mappers[i] == NULL)
             continue;
 
+        if (!mappers[i]->IsA("vtkPointGlyphMapper"))
+            continue;
+
         actors[i]->GetProperty()->SetPointSize(pointSize);
 
         vtkPointGlyphMapper *pm = (vtkPointGlyphMapper*)mappers[i];
         pm->SetSpatialDimension(
             GetInput()->GetInfo().GetAttributes().GetSpatialDimension());
         pm->SetGlyphType(glyphType);
-        pm->SetLookupTable(lut);
+        pm->SetLookupTable(pmLUT);
         if (colorByScalar)
             pm->ColorByScalarOn(coloringVarName);
         else
@@ -135,9 +143,11 @@ avtPointMapper::CustomizeMappers(void)
 //    sn          The name of the scalar var.
 //
 //  Programmer:   Kathleen Biagas
-//  Creation:     August 17, 2016 
+//  Creation:     August 17, 2016
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Aug 27 08:45:25 PDT 2019
+//    Ensure the mapper is a vtkPointGlyphMapper.
 //
 // ****************************************************************************
 
@@ -148,10 +158,11 @@ avtPointMapper::ColorByScalarOn(const string &sn)
     coloringVarName = sn;
     for (int i = 0 ; i < nMappers ; i++)
     {
-        if (mappers[i] != NULL) 
-            ((vtkPointGlyphMapper*)mappers[i])->ColorByScalarOn(coloringVarName); 
+        if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper"))
+            ((vtkPointGlyphMapper*)mappers[i])->ColorByScalarOn(coloringVarName);
     }
 }
+
 
 // ****************************************************************************
 //  Method: avtPointMapper::ColorByScalarOff
@@ -163,9 +174,11 @@ avtPointMapper::ColorByScalarOn(const string &sn)
 //    col         The new color.
 //
 //  Programmer:   Kathleen Biagas
-//  Creation:     August 17, 2016 
+//  Creation:     August 17, 2016
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Aug 27 08:45:25 PDT 2019
+//    Ensure the mapper is a vtkPointGlyphMapper.
 //
 // ****************************************************************************
 
@@ -175,24 +188,23 @@ avtPointMapper::ColorByScalarOff()
     colorByScalar = false;
     for (int i = 0 ; i < nMappers ; i++)
     {
-        if (mappers[i] != NULL) 
-            ((vtkPointGlyphMapper*)mappers[i])->ColorByScalarOff(); 
+        if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper"))
+            ((vtkPointGlyphMapper*)mappers[i])->ColorByScalarOff();
     }
 }
-
 
 
 // ****************************************************************************
 //  Method: avtPointMapper::ScaleByVar
 //
 //  Purpose:
-//    Turns on data scaling for the glyph portion of this mapper. 
+//    Turns on data scaling for the glyph portion of this mapper.
 //
 //  Arguments:
 //    sname     The name of the variable to be used for scaling.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 17, 2016 
+//  Creation:   August 17, 2016
 //
 //  Modifications:
 //
@@ -204,28 +216,31 @@ avtPointMapper::ScaleByVar(const std::string &sname)
     if (sname == "" || sname == "\0")
     {
         DataScalingOff();
-        return; 
+        return;
     }
-    scalingVarName = sname;       
+    scalingVarName = sname;
     scalingVarDim = 1;
-    if (*(GetInput()) != NULL && 
+    if (*(GetInput()) != NULL &&
         GetInput()->GetInfo().GetAttributes().ValidVariable(sname.c_str()))
     {
         scalingVarDim = GetInput()->GetInfo().GetAttributes().
-                        GetVariableDimension(sname.c_str()); 
+                        GetVariableDimension(sname.c_str());
     }
     DataScalingOn(scalingVarName, scalingVarDim);
 }
 
+
 // ****************************************************************************
-//  Method: avtPointMapper::DataScalingOff 
+//  Method: avtPointMapper::DataScalingOff
 //
 //  Purpose:
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 17, 2016 
+//  Creation:   August 17, 2016
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Aug 27 08:45:25 PDT 2019
+//    Ensure the mapper is a vtkPointGlyphMapper.
 //
 // ****************************************************************************
 
@@ -237,35 +252,38 @@ avtPointMapper::DataScalingOff(void)
 
     for (int i = 0 ; i < nMappers ; i++)
     {
-        if (mappers[i] != NULL)
-            ((vtkPointGlyphMapper*)mappers[i])->DataScalingOff(); 
+        if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper"))
+            ((vtkPointGlyphMapper*)mappers[i])->DataScalingOff();
     }
 }
 
+
 // ****************************************************************************
-//  Method: avtPointMapper::DataScalingOn 
+//  Method: avtPointMapper::DataScalingOn
 //
 //  Purpose:
 //    Turns on the appropriate type of data scaling based on the dimension
-//    of the variable to be used in scaling. 
+//    of the variable to be used in scaling.
 //
 //  Arguments:
 //    sname     The name of the scalars to be used for scaling the glyphs.
 //    varDim    The dimension of the var to be used for scaling.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   August 19, 2004 
+//  Creation:   August 19, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Nov 12 09:24:15 PST 2004
 //    Added varDim argument so that data scaling can be done by other
-//    than just scalar vars.  
+//    than just scalar vars.
 //
 //    John Schmidt, Thu Nov 15 13:08:21 MST 2012
-//    Added capability to scale by a 3x3 tensor.  
+//    Added capability to scale by a 3x3 tensor.
+//
+//    Kathleen Biagas, Tue Aug 27 08:45:25 PDT 2019
+//    Ensure the mapper is a vtkPointGlyphMapper.
 //
 // ****************************************************************************
-
 
 void
 avtPointMapper::DataScalingOn(const string &sname, int varDim)
@@ -275,11 +293,10 @@ avtPointMapper::DataScalingOn(const string &sname, int varDim)
     scalingVarDim = varDim;
     for (int i = 0 ; i < nMappers ; i++)
     {
-        if (mappers[i] != NULL)
-            ((vtkPointGlyphMapper*)mappers[i])->DataScalingOn(sname, varDim); 
+        if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper"))
+            ((vtkPointGlyphMapper*)mappers[i])->DataScalingOn(sname, varDim);
     }
 }
-
 
 
 // ****************************************************************************
@@ -291,8 +308,12 @@ avtPointMapper::DataScalingOn(const string &sname, int varDim)
 //  Arguments:
 //      s        The new scale.
 //
-//  Programmer:  Kathleen Biagas 
-//  Creation:    August 17, 2016 
+//  Programmer:  Kathleen Biagas
+//  Creation:    August 17, 2016
+//
+// Modifications:
+//    Kathleen Biagas, Tue Aug 27 08:45:25 PDT 2019
+//    Ensure the mapper is a vtkPointGlyphMapper.
 //
 // ****************************************************************************
 
@@ -302,7 +323,7 @@ avtPointMapper::SetScale(double s)
     scale = s;
     for (int i = 0 ; i < nMappers ; i++)
     {
-        if (mappers[i] != NULL)
+        if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper"))
             ((vtkPointGlyphMapper*)mappers[i])->SetScale(scale);
     }
 }
@@ -311,13 +332,15 @@ avtPointMapper::SetScale(double s)
 // ****************************************************************************
 // Method: avtPointMapper::SetGlyphType
 //
-// Purpose: 
+// Purpose:
 //   This method sets the point glyph type.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 17, 2016
 //
 // Modifications:
+//    Kathleen Biagas, Tue Aug 27 08:45:25 PDT 2019
+//    Ensure the mapper is a vtkPointGlyphMapper.
 //
 // ****************************************************************************
 
@@ -327,10 +350,11 @@ avtPointMapper::SetGlyphType(GlyphType type)
     glyphType = type;
     for (int i = 0; i < nMappers; i++)
     {
-        if (mappers[i] != NULL)
+        if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper"))
             ((vtkPointGlyphMapper*)mappers[i])->SetGlyphType(type);
     }
 }
+
 
 // ****************************************************************************
 //  Method: avtPointMapper::SetPointSize
@@ -363,7 +387,7 @@ avtPointMapper::SetPointSize(double s)
 // ****************************************************************************
 // Method: avtPointMapper::SetFullFrameScaling
 //
-// Purpose: 
+// Purpose:
 //   Sets a fullframe scale factor that can be used by the mapper to compensate
 //   for the stretching that fullframe mode performs on geometry.
 //
@@ -373,13 +397,15 @@ avtPointMapper::SetPointSize(double s)
 //
 // Returns:    True if any vtk mappers use the scale.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jul 24 13:55:54 PST 2006
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Tue Aug 27 08:45:25 PDT 2019
+//    Ensure the mapper is a vtkPointGlyphMapper.
+//
 // ****************************************************************************
 
 bool
@@ -388,7 +414,7 @@ avtPointMapper::SetFullFrameScaling(bool useScale, const double *s)
     bool retval = false;
     for (int i = 0; i < nMappers && !retval; ++i)
     {
-        if (mappers[i] != NULL)
+        if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper"))
            retval = ((vtkPointGlyphMapper*)mappers[i])->
                 SetFullFrameScaling(useScale, s);
     }
@@ -396,42 +422,42 @@ avtPointMapper::SetFullFrameScaling(bool useScale, const double *s)
 }
 
 
-
 // ****************************************************************************
 //  Method: avtPointMapper::SetLUT
 //
 //  Purpose:
-//    Causes the mapper to use the specified lookup table. 
+//    Causes the mapper to use the specified lookup table.
 //
 //  Arguments:
-//    lut    The new value for the lookup table. 
+//    lut    The new value for the lookup table.
 //
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 08, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 08, 2001
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Aug 27 08:45:25 PDT 2019
+//    Ensure the mapper is a vtkPointGlyphMapper. lut was renamed to pmLUT.
 //
 // ****************************************************************************
 
 void
 avtPointMapper::SetLUT(vtkLookupTable *LUT)
 {
-    if (lut == LUT)
+    if (pmLUT == LUT)
     {
         // no need to change anything
         return;
     }
 
-    lut = LUT;
+    pmLUT = LUT;
 
     for (int i = 0; i < nMappers; i++)
     {
-        if (mappers[i] != NULL)
+        if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper"))
         {
-            ((vtkPointGlyphMapper*)mappers[i])->SetLookupTable(lut);
+            ((vtkPointGlyphMapper*)mappers[i])->SetLookupTable(pmLUT);
         }
     }
 }
-
 

@@ -9,7 +9,10 @@
 #ifndef AVT_PSEUDOCOLORMAPPER_H
 #define AVT_PSEUDOCOLORMAPPER_H
 
-#include <avtVariableMapper.h>
+#include <avtVariablePointGlyphMapper.h>
+
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Class:  avtPseudocolorMapper
@@ -20,20 +23,23 @@
 //      to be rendered at the same time( eg Surface, Wireframe, and Points).
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 24, 2016 
+//  Creation:   August 24, 2016
 //
 //  Modifications:
 //    Kathleen Biagas, Wed Apr 10 09:06:05 PDT 2019
 //    Added pointSize.
 //
+//    Kathleen Biagas, Tue Aug 27 09:26:01 PDT 2019
+//    Derive from avtVariablePointGlyphMapper.
+//    Added SetLookupTable and labels.
+//
 // ****************************************************************************
 
-class avtPseudocolorMapper : public avtVariableMapper
+class avtPseudocolorMapper : public avtVariablePointGlyphMapper
 {
   public:
                                avtPseudocolorMapper();
     virtual                   ~avtPseudocolorMapper();
-
 
     void                       SetDrawSurface(bool);
     void                       SetDrawWireframe(bool);
@@ -41,14 +47,14 @@ class avtPseudocolorMapper : public avtVariableMapper
     void                       SetPointSize(int);
     void                       SetWireframeColor(double rgb[3]);
     void                       SetPointsColor(double rgb[3]);
-
-
+    void                       SetLookupTable(vtkLookupTable *);
 
 
   protected:
     // these are called from avtMapper
-    virtual vtkDataSetMapper  *CreateMapper(void);
+    virtual vtkDataSetMapper  *CreateMapper(int);
     virtual void               CustomizeMappers(void);
+    virtual void               SetLabels(std::vector<std::string> &, bool);
 
   private:
 
@@ -58,9 +64,8 @@ class avtPseudocolorMapper : public avtVariableMapper
     int    pointSize;
     double wireframeColor[3];
     double pointsColor[3];
+    std::vector<std::string> labels;
 };
 
-
 #endif
-
 

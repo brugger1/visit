@@ -14,15 +14,12 @@
 #include <avtExtents.h>
 #include <avtLookupTable.h>
 #include <avtPolylineCleanupFilter.h>
-#include <avtPolylineAddEndPointsFilter.h>
-#include <avtPolylineToRibbonFilter.h>
-#include <avtPolylineToTubeFilter.h>
 #include <avtPseudocolorFilter.h>
-#include <avtStaggeringFilter.h>
-#include <avtShiftCenteringFilter.h>
-#include <avtVariableLegend.h>
+#include <avtPseudocolorGeometryFilter.h>
 #include <avtPseudocolorMapper.h>
-#include <avtVariablePointGlyphMapper.h>
+#include <avtShiftCenteringFilter.h>
+#include <avtStaggeringFilter.h>
+#include <avtVariableLegend.h>
 
 #include <DebugStream.h>
 #include <InvalidLimitsException.h>
@@ -82,13 +79,16 @@ using std::string;
 //    a special vtk mapper under the covers allowing for rendering multiple
 //    Representations (surface, wireframe, points) at the same time.
 //
+//    Kathleen Biagas, Tue Aug 27 09:42:41 PDT 2019
+//    Removed glyphMapper (handled now by avtPseudocolorMapper), polyline*
+//    filters, added pcGeoFilter. Renamed 'filter' as 'shiftFilter'.
+//
 // ****************************************************************************
 
 avtPseudocolorPlot::avtPseudocolorPlot()
 {
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Pseudocolor");
-    glyphMapper = new avtVariablePointGlyphMapper;
     mapper      = new avtPseudocolorMapper;
 
     colorsInitialized = false;
@@ -96,13 +96,11 @@ avtPseudocolorPlot::avtPseudocolorPlot()
 
     avtLUT  = new avtLookupTable;
 
-    filter = NULL;
+    shiftFilter = NULL;
     pcfilter = NULL;
+    pcGeoFilter = NULL;
     staggeringFilter = NULL;
     polylineCleanupFilter = NULL;
-    polylineAddEndPointsFilter = NULL;
-    polylineToRibbonFilter = NULL;
-    polylineToTubeFilter = NULL;
     colorTableIsFullyOpaque = true;
 
     //
@@ -135,16 +133,20 @@ avtPseudocolorPlot::avtPseudocolorPlot()
 //    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004
 //    Added pcfilter.
 //
+//    Kathleen Biagas, Tue Aug 27 09:42:41 PDT 2019
+//    Removed glyphMapper, polyline* filters, added pcGeoFilter. Renamed
+//    'filter' as 'shiftFilter'.
+//
 // ****************************************************************************
 
 avtPseudocolorPlot::~avtPseudocolorPlot()
 {
-    if (filter != NULL)
+    if (shiftFilter != NULL)
     {
-        delete filter;
-        filter = NULL;
+        delete shiftFilter;
+        shiftFilter = NULL;
     }
- 
+
     if (staggeringFilter != NULL)
     {
         delete staggeringFilter;
@@ -157,28 +159,16 @@ avtPseudocolorPlot::~avtPseudocolorPlot()
         polylineCleanupFilter = NULL;
     }
 
-    if (polylineToTubeFilter != NULL)
-    {
-        delete polylineToTubeFilter;
-        polylineToTubeFilter = NULL;
-    }
-
-    if (polylineToRibbonFilter != NULL)
-    {
-        delete polylineToRibbonFilter;
-        polylineToRibbonFilter = NULL;
-    }
-
-    if (polylineAddEndPointsFilter != NULL)
-    {
-        delete polylineAddEndPointsFilter;
-        polylineAddEndPointsFilter = NULL;
-    }
-
     if (pcfilter != NULL)
     {
         delete pcfilter;
         pcfilter = NULL;
+    }
+
+    if (pcGeoFilter != NULL)
+    {
+        delete pcGeoFilter;
+        pcGeoFilter = NULL;
     }
 
     if (avtLUT != NULL)
@@ -190,11 +180,6 @@ avtPseudocolorPlot::~avtPseudocolorPlot()
     {
         delete mapper;
         mapper = NULL;
-    }
-    if (glyphMapper != NULL)
-    {
-        delete glyphMapper;
-        glyphMapper = NULL;
     }
 
     //
@@ -236,19 +221,15 @@ avtPseudocolorPlot::Create()
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
 //    Replaced varMapper with glyphMapper.
 //
+//    Kathleen Biagas, Tue Aug 27 09:42:41 PDT 2019
+//    Removed glyphMapper.
+//
 // ****************************************************************************
 
 avtMapperBase *
 avtPseudocolorPlot::GetMapper(void)
 {
-    if (topologicalDim != 0)
-    {
-        return mapper;
-    }
-    else 
-    {
-        return glyphMapper;
-    }
+    return mapper;
 }
 
 
@@ -378,6 +359,9 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 //    I modified the plot to support independently setting the point style
 //    for the two end points of lines.
 //
+//    Kathleen Biagas, Tue Aug 27 09:28:45 PDT 2019
+//    Removed avtPolyline* filters, replaced by avtPseudocolorGeometryFilter.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -395,21 +379,22 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
         // data and the data is already zonal, then this will effectively
         // be a no-op.
         //
-        if (filter != NULL)
+        if (shiftFilter != NULL)
         {
-            delete filter;
+            delete shiftFilter;
         }
 
         PseudocolorAttributes::Centering c = atts.GetCentering();
 
         if (c == PseudocolorAttributes::Nodal)
-            filter = new avtShiftCenteringFilter(AVT_NODECENT);
-        if (c == PseudocolorAttributes::Zonal)
-            filter = new avtShiftCenteringFilter(AVT_ZONECENT);
+            shiftFilter = new avtShiftCenteringFilter(AVT_NODECENT);
+        else // if (c == PseudocolorAttributes::Zonal)
+            shiftFilter = new avtShiftCenteringFilter(AVT_ZONECENT);
 
-        filter->SetInput(dob);
-        dob = filter->GetOutput();
+        shiftFilter->SetInput(dob);
+        dob = shiftFilter->GetOutput();
     }
+
 
     // PolylineCleanup Filter
     if (polylineCleanupFilter != NULL)
@@ -422,101 +407,18 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
     polylineCleanupFilter->SetInput(dob);
     dob = polylineCleanupFilter->GetOutput();
 
-    // PolylineAddEndPoints Filter
-    if (polylineAddEndPointsFilter != NULL)
+    // PseudocolorGeometry Filter
+    // Glyphs lines and line endpoints, strips vertices into separate
+    // dataset for glyphing by mapper.
+    if (pcGeoFilter != NULL)
     {
-      delete polylineAddEndPointsFilter;
-      polylineAddEndPointsFilter = NULL;
+      delete pcGeoFilter;
+      pcGeoFilter = NULL;
     }
-
-    if( atts.GetTailStyle() != PseudocolorAttributes::None ||
-        atts.GetHeadStyle() != PseudocolorAttributes::None)
-    {
-      double bbox[6] = {0.,1.,0.,1.,0.,1.};
-      dob->GetInfo().GetAttributes().GetOriginalSpatialExtents()->CopyTo(bbox);
-
-      polylineAddEndPointsFilter = new avtPolylineAddEndPointsFilter();
-
-      polylineAddEndPointsFilter->tailStyle    = atts.GetTailStyle();
-      polylineAddEndPointsFilter->headStyle    = atts.GetHeadStyle();
-
-      if( atts.GetEndPointRadiusSizeType() == PseudocolorAttributes::Absolute )
-        polylineAddEndPointsFilter->radius = atts.GetEndPointRadiusAbsolute();
-      else
-        polylineAddEndPointsFilter->radius =
-          atts.GetEndPointRadiusBBox() * GetBBoxSize( bbox );
-
-      polylineAddEndPointsFilter->ratio        = atts.GetEndPointRatio();
-
-      polylineAddEndPointsFilter->varyRadius   = atts.GetEndPointRadiusVarEnabled();
-      polylineAddEndPointsFilter->radiusVar    = atts.GetEndPointRadiusVar();
-      polylineAddEndPointsFilter->radiusFactor = atts.GetEndPointRadiusVarRatio();
-
-      polylineAddEndPointsFilter->resolution   = atts.GetEndPointResolution();
-
-      polylineAddEndPointsFilter->SetInput(dob);
-
-      dob = polylineAddEndPointsFilter->GetOutput();
-    }
-
-    // PolylineToTube Filter
-    if (polylineToTubeFilter != NULL)
-    {
-      delete polylineToTubeFilter;
-      polylineToTubeFilter = NULL;
-    }
-
-    // PolylineToRibbon Filter
-    if (polylineToRibbonFilter != NULL)
-    {
-      delete polylineToRibbonFilter;
-      polylineToRibbonFilter = NULL;
-    }
-
-    if( atts.GetLineType() == PseudocolorAttributes::Tube )
-    {
-      double bbox[6] = {0.,1.,0.,1.,0.,1.};
-      dob->GetInfo().GetAttributes().GetOriginalSpatialExtents()->CopyTo(bbox);
-
-      polylineToTubeFilter = new avtPolylineToTubeFilter();
-
-      if( atts.GetTubeRadiusSizeType() == PseudocolorAttributes::Absolute )
-        polylineToTubeFilter->radius = atts.GetTubeRadiusAbsolute();
-      else
-        polylineToTubeFilter->radius =
-          atts.GetTubeRadiusBBox() * GetBBoxSize( bbox );
-
-      polylineToTubeFilter->varyRadius    = atts.GetTubeRadiusVarEnabled();
-      polylineToTubeFilter->radiusVar     = atts.GetTubeRadiusVar();
-      polylineToTubeFilter->radiusFactor  = atts.GetTubeRadiusVarRatio();
-      polylineToTubeFilter->numberOfSides = atts.GetTubeResolution();
-
-      polylineToTubeFilter->SetInput(dob);
-
-      dob = polylineToTubeFilter->GetOutput();
-    }
-    else if( atts.GetLineType() == PseudocolorAttributes::Ribbon )
-    {
-      double bbox[6] = {0.,1.,0.,1.,0.,1.};
-      dob->GetInfo().GetAttributes().GetOriginalSpatialExtents()->CopyTo(bbox);
-
-      polylineToRibbonFilter = new avtPolylineToRibbonFilter();
-
-      if( atts.GetTubeRadiusSizeType() == PseudocolorAttributes::Absolute )
-        polylineToRibbonFilter->width = atts.GetTubeRadiusAbsolute();
-      else
-        polylineToRibbonFilter->width =
-          atts.GetTubeRadiusBBox() * GetBBoxSize( bbox );
-
-      polylineToRibbonFilter->varyWidth   = atts.GetTubeRadiusVarEnabled();
-      polylineToRibbonFilter->widthVar    = atts.GetTubeRadiusVar();
-      polylineToRibbonFilter->widthFactor = atts.GetTubeRadiusVarRatio();
-
-      polylineToRibbonFilter->SetInput(dob);
-
-      dob = polylineToRibbonFilter->GetOutput();
-    }
-
+    pcGeoFilter = new avtPseudocolorGeometryFilter();
+    pcGeoFilter->SetInput(dob);
+    pcGeoFilter->SetPlotAtts(&atts);
+    dob = pcGeoFilter->GetOutput();
     return dob;
 }
 
@@ -693,6 +595,9 @@ avtPseudocolorPlot::NeedZBufferToCompositeEvenIn2D(void)
 //    Brad Whitlock, Mon Jan  7 17:00:39 PST 2013
 //    I added some new glyph types.
 //
+//    Kathleen Biagas, Tue Aug 27 09:42:41 PDT 2019
+//    Removed glyphMapper.
+//
 // ****************************************************************************
 
 void
@@ -734,7 +639,7 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
 
     mapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
 
-    glyphMapper->SetScale(atts.GetPointSize());
+    mapper->SetScale(atts.GetPointSize());
 
     // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME
     // This functionality was possible with the deprecated Streamline
@@ -776,25 +681,25 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
         if (atts.GetPointSizeVar() == "default")
         {
             if (varname != NULL)
-                glyphMapper->ScaleByVar(varname);
+                mapper->ScaleByVar(varname);
         }
         else
         {
-            glyphMapper->ScaleByVar(atts.GetPointSizeVar());
+            mapper->ScaleByVar(atts.GetPointSizeVar());
         }
     }
     else
     {
-        glyphMapper->DataScalingOff();
+        mapper->DataScalingOff();
     }
 
-    glyphMapper->SetGlyphType(atts.GetPointType());
+    mapper->SetGlyphType(atts.GetPointType());
 
     SetPointGlyphSize();
 
     if (varname != NULL)
     {
-        glyphMapper->ColorByScalarOn(string(varname));
+        mapper->ColorByScalarOn(string(varname));
     }
 
     mapper->SetDrawSurface(atts.GetRenderSurfaces());
@@ -886,6 +791,9 @@ avtPseudocolorPlot::GetDataExtents(std::vector<double> &extents)
 //    Added call to InvalidateTransparencyCache when this plot is utilizing
 //    colortable opacity and the colortable opaqueness changed.
 //
+//    Kathleen Biagas, Tue Aug 27 09:42:41 PDT 2019
+//    Removed glyphMapper.
+//
 // ****************************************************************************
 
 bool
@@ -895,7 +803,7 @@ avtPseudocolorPlot::SetColorTable(const char *ctName)
 
     colorTableIsFullyOpaque =
         avtColorTables::Instance()->ColorTableIsFullyOpaque(ctName);
-    
+
     bool namesMatch = (atts.GetColorTableName() == string(ctName));
     bool useOpacities = SetOpacityFromAtts();
 
@@ -934,7 +842,6 @@ avtPseudocolorPlot::SetColorTable(const char *ctName)
     if (useOpacities && (oldColorTableIsFullyOpaque != colorTableIsFullyOpaque))
     {
         mapper->InvalidateTransparencyCache();
-        glyphMapper->InvalidateTransparencyCache();
     }
 
     return retval;
@@ -992,6 +899,9 @@ avtPseudocolorPlot::SetLegend(bool legendOn)
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
 //    Replaced varMapper with glyphMapper.
 //
+//    Kathleen Biagas, Tue Aug 27 09:42:41 PDT 2019
+//    Removed glyphMapper.
+//
 // ****************************************************************************
 
 void
@@ -1003,18 +913,15 @@ avtPseudocolorPlot::SetScaling(int mode, double skew)
     if (mode == 1)
     {
        mapper->SetLookupTable(avtLUT->GetLogLookupTable());
-       glyphMapper->SetLUT(avtLUT->GetLogLookupTable());
     }
     else if (mode == 2)
     {
        avtLUT->SetSkewFactor(skew);
        mapper->SetLookupTable(avtLUT->GetSkewLookupTable());
-       glyphMapper->SetLUT(avtLUT->GetSkewLookupTable());
     }
     else
     {
        mapper->SetLookupTable(avtLUT->GetLookupTable());
-       glyphMapper->SetLUT(avtLUT->GetLookupTable());
     }
 }
 
@@ -1039,6 +946,9 @@ avtPseudocolorPlot::SetScaling(int mode, double skew)
 //    Hank Childs, Fri Oct 29 10:00:15 PDT 2004
 //    Turn off specular lighting as well.
 //
+//    Kathleen Biagas, Tue Aug 27 09:42:41 PDT 2019
+//    Removed glyphMapper.
+//
 // ****************************************************************************
 
 void
@@ -1048,15 +958,11 @@ avtPseudocolorPlot::SetLighting(bool lightingOn)
     {
         mapper->TurnLightingOn();
         mapper->SetSpecularIsInappropriate(false);
-        glyphMapper->TurnLightingOn();
-        glyphMapper->SetSpecularIsInappropriate(false);
     }
     else
     {
         mapper->TurnLightingOff();
         mapper->SetSpecularIsInappropriate(true);
-        glyphMapper->TurnLightingOff();
-        glyphMapper->SetSpecularIsInappropriate(true);
     }
 }
 
@@ -1094,6 +1000,9 @@ avtPseudocolorPlot::SetLighting(bool lightingOn)
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
 //    Replaced varMapper with glyphMapper.
 //
+//    Kathleen Biagas, Tue Aug 27 09:42:41 PDT 2019
+//    Removed glyphMapper.
+//
 // ****************************************************************************
 
 void
@@ -1103,10 +1012,7 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
     //
     //  Retrieve the actual range of the data
     //
-    if (topologicalDim != 0)
-        mapper->GetVarRange(min, max);
-    else
-        glyphMapper->GetVarRange(min, max);
+    mapper->GetVarRange(min, max);
 
     double userMin = atts.GetMinFlag() ? atts.GetMin() : min;
     double userMax = atts.GetMaxFlag() ? atts.GetMax() : max;
@@ -1115,8 +1021,6 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
     {
         mapper->SetMin(dataExtents[0]);
         mapper->SetMax(dataExtents[1]);
-        glyphMapper->SetMin(dataExtents[0]);
-        glyphMapper->SetMax(dataExtents[1]);
     }
     else if (atts.GetMinFlag() && atts.GetMaxFlag())
     {
@@ -1128,49 +1032,30 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
         {
             mapper->SetMin(userMin);
             mapper->SetMax(userMax);
-            glyphMapper->SetMin(userMin);
-            glyphMapper->SetMax(userMax);
         }
     }
     else if (atts.GetMinFlag())
     {
         mapper->SetMin(userMin);
-        glyphMapper->SetMin(userMin);
         if (userMin > userMax)
-        {
             mapper->SetMax(userMin);
-            glyphMapper->SetMax(userMin);
-        }
         else
-        {
             mapper->SetMaxOff();
-            glyphMapper->SetMaxOff();
-        }
     }
     else if (atts.GetMaxFlag())
     {
         mapper->SetMax(userMax);
-        glyphMapper->SetMax(userMax);
         if (userMin > userMax)
-        {
             mapper->SetMin(userMax);
-            glyphMapper->SetMin(userMax);
-        }
         else
-        {
             mapper->SetMinOff();
-            glyphMapper->SetMinOff();
-        }
     }
     else
     {
         mapper->SetMinOff();
         mapper->SetMaxOff();
-        glyphMapper->SetMinOff();
-        glyphMapper->SetMaxOff();
     }
     mapper->SetLimitsMode(limitsMode);
-    glyphMapper->SetLimitsMode(limitsMode);
 
     SetLegendRanges();
 }
@@ -1203,6 +1088,9 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
 //    the value in the mapper gets propagated to the actor prop which is
 //    then used to move the geometry into the sorted transparency actor).
 //
+//    Kathleen Biagas, Tue Aug 27 09:42:41 PDT 2019
+//    Removed glyphMapper.
+//
 // ****************************************************************************
 
 bool
@@ -1231,7 +1119,6 @@ avtPseudocolorPlot::SetOpacityFromAtts()
     //     (colorTableIsFullyOpaque ? 1.0 : 0.99) : origOpacity;
 
     mapper->SetOpacity(realOpacity);
-    glyphMapper->SetOpacity(realOpacity);
 
     if (realOpacity < 1.0)
     {
@@ -1279,6 +1166,9 @@ avtPseudocolorPlot::SetOpacityFromAtts()
 //    Make setting of BelowMin/AboveMax colors conditional upon Min/MaxFlag
 //    and UseBelowMin/UseAboveMaxColor.
 //
+//    Kathleen Biagas, Tue Aug 27 09:42:41 PDT 2019
+//    Removed glyphMapper.
+//
 // ****************************************************************************
 
 void
@@ -1291,19 +1181,9 @@ avtPseudocolorPlot::SetLegendRanges()
     //
     bool validRange = false;
     if (atts.GetLimitsMode() == PseudocolorAttributes::OriginalData)
-    {
-        if (topologicalDim != 0)
-            validRange = mapper->GetRange(min, max);
-        else
-            validRange = glyphMapper->GetRange(min, max);
-    }
+        validRange = mapper->GetRange(min, max);
     else
-    {
-        if (topologicalDim != 0)
-            validRange = mapper->GetCurrentRange(min, max);
-        else
-            validRange = glyphMapper->GetCurrentRange(min, max);
-    }
+        validRange = mapper->GetCurrentRange(min, max);
 
     varLegend->SetRange(min, max);
 
@@ -1315,16 +1195,13 @@ avtPseudocolorPlot::SetLegendRanges()
     {
         EXCEPTION1(InvalidLimitsException, true);
     }
- 
+
     varLegend->SetScaling(atts.GetScaling(), atts.GetSkewFactor());
 
     //
     // set and get the range for the legend's limits text
     //
-    if (topologicalDim != 0)
-        mapper->GetVarRange(min, max);
-    else
-        glyphMapper->GetVarRange(min, max);
+    mapper->GetVarRange(min, max);
     varLegend->SetVarRange(min, max);
 
     varLegend->UseBelowRangeColor(atts.GetUseBelowMinColor());
@@ -1359,14 +1236,14 @@ avtPseudocolorPlot::SetLegendRanges()
 //   Kathleen Biagas, Wed Apr 10 09:06:49 PDT 2019
 //   Send pointSizePixels to the normal mapper.
 //
+//   Kathleen Biagas, Tue Aug 27 09:42:41 PDT 2019
+//   Removed glyphMapper.
+//
 // ****************************************************************************
 
 void
 avtPseudocolorPlot::SetPointGlyphSize()
 {
-    // Size used for points when using a point glyph.
-    if(atts.GetPointType() == Point)
-        glyphMapper->SetPointSize(atts.GetPointSizePixels());
     mapper->SetPointSize(atts.GetPointSizePixels());
 }
 
@@ -1386,6 +1263,10 @@ avtPseudocolorPlot::SetPointGlyphSize()
 //    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004
 //    Added pcfilter.
 //
+//    Kathleen Biagas, Tue Aug 27 09:41:13 PDT 2019
+//    Removed polyline* filters, added pcGeoFilter. Renamed 'filter' as
+//    'shiftFilter'.
+//
 // ****************************************************************************
 
 void
@@ -1403,29 +1284,19 @@ avtPseudocolorPlot::ReleaseData(void)
         polylineCleanupFilter->ReleaseData();
     }
 
-    if (polylineToTubeFilter != NULL)
+    if (shiftFilter != NULL)
     {
-        polylineToTubeFilter->ReleaseData();
-    }
-
-    if (polylineToRibbonFilter != NULL)
-    {
-        polylineToRibbonFilter->ReleaseData();
-    }
-
-    if (polylineAddEndPointsFilter != NULL)
-    {
-        polylineAddEndPointsFilter->ReleaseData();
-    }
-
-    if (filter != NULL)
-    {
-        filter->ReleaseData();
+        shiftFilter->ReleaseData();
     }
 
     if (pcfilter != NULL)
     {
         pcfilter->ReleaseData();
+    }
+
+    if (pcGeoFilter != NULL)
+    {
+        pcGeoFilter->ReleaseData();
     }
 }
 
@@ -1446,31 +1317,6 @@ avtPseudocolorPlot::GetSmoothingLevel()
 {
     return atts.GetSmoothingLevel();
 }
-
-
-// ****************************************************************************
-//  Method: avtPseudocolorPlot::EnhanceSpecification
-//
-//  Purpose:
-//    Add secondary variable to pipeline if needed.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   August 19, 2004
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Aug 26 22:23:26 PDT 2010
-//    Calculate the extents of the scaling variable.
-//
-// ****************************************************************************
-
-// avtContract_p
-// avtPseudocolorPlot::EnhanceSpecification(avtContract_p contract)
-// {
-//     avtContract_p rv = contract;
-//
-//     return rv;
-// }
 
 
 // ****************************************************************************

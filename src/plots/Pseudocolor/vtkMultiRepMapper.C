@@ -32,6 +32,11 @@ vtkMultiRepMapper::~vtkMultiRepMapper()
 }
 
 //----------------------------------------------------------------------------
+//  Modifications:
+//    Kathleen Biagas, Tue Aug 20 10:10:42 PDT 2019
+//    Ensure ambient and diffuse properties are set appropriately.
+//
+//----------------------------------------------------------------------------
 void vtkMultiRepMapper::Render(vtkRenderer *ren, vtkActor *act)
 {
   if (this->DrawSurface)
@@ -43,9 +48,10 @@ void vtkMultiRepMapper::Render(vtkRenderer *ren, vtkActor *act)
     {
     bool sv = this->ScalarVisibility;
     this->ScalarVisibilityOff();
-    
     act->GetProperty()->SetRepresentationToWireframe();
     act->GetProperty()->SetColor(this->WireframeColor);
+    act->GetProperty()->SetAmbient(1);
+    act->GetProperty()->SetDiffuse(0);
     this->Superclass::Render(ren,act);
     this->SetScalarVisibility(sv);
     }
@@ -55,6 +61,8 @@ void vtkMultiRepMapper::Render(vtkRenderer *ren, vtkActor *act)
     this->ScalarVisibilityOff();
     act->GetProperty()->SetRepresentationToPoints();
     act->GetProperty()->SetColor(this->PointsColor);
+    act->GetProperty()->SetAmbient(1);
+    act->GetProperty()->SetDiffuse(0);
     this->Superclass::Render(ren,act);
     this->SetScalarVisibility(sv);
     }

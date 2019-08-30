@@ -2875,6 +2875,12 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             tubeRadiusVarRatio   != obj.tubeRadiusVarRatio ||
                             tubeResolution       != obj.tubeResolution ||
 
+                            pointType           != obj.pointType ||
+                            pointSizeVar        != obj.pointSizeVar ||
+                            pointSizeVarEnabled != obj.pointSizeVarEnabled ||
+                            pointSize           != obj.pointSize||
+                            pointSizePixels     != obj.pointSizePixels ||
+
                             tailStyle                != obj.tailStyle ||
                             headStyle                != obj.headStyle ||
                             endPointRatio            != obj.endPointRatio ||

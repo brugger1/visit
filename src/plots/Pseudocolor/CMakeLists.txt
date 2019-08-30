@@ -27,7 +27,9 @@ PseudocolorViewerEnginePluginInfo.C
 PseudocolorViewerPluginInfo.C
 avtPseudocolorPlot.C
 avtPseudocolorFilter.C
+avtPseudocolorGeometryFilter.C
 avtPseudocolorMapper.C
+vtkExtractCellsByType.C
 vtkMultiRepMapper.C
 ${COMMON_SOURCES}
 )
@@ -37,7 +39,9 @@ PseudocolorViewerEnginePluginInfo.C
 PseudocolorEnginePluginInfo.C
 avtPseudocolorPlot.C
 avtPseudocolorFilter.C
+avtPseudocolorGeometryFilter.C
 avtPseudocolorMapper.C
+vtkExtractCellsByType.C
 vtkMultiRepMapper.C
 ${COMMON_SOURCES}
 )
@@ -63,6 +67,7 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Pipeline
 ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sinks
 ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/Plotter
+${VISIT_INCLUDE_DIR}/avt/Plotter/vtk
 ${VISIT_INCLUDE_DIR}/avt/QtVisWindow
 ${VISIT_INCLUDE_DIR}/avt/View
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/Colleagues

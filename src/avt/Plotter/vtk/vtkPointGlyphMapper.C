@@ -57,9 +57,9 @@ vtkPolyData *
 vtkPointGlyphMapperHelper::GetGlyphSource(int spatDim)
 {
   if (spatDim == 3)
-    return this->Glyph3D.GetPointer(); 
-  else 
-    return this->Glyph2D.GetPointer(); 
+    return this->Glyph3D.GetPointer();
+  else
+    return this->Glyph2D.GetPointer();
 }
 
 //----------------------------------------------------------------------------
@@ -135,7 +135,7 @@ void vtkPointGlyphMapperHelper::SetUpGlyph()
     this->Glyph3D->SetPoints(pts.GetPointer());
 
     this->Glyph3D->Allocate(15);
-    vtkIdType ids[3][4] = { { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, 
+    vtkIdType ids[3][4] = { { 0, 1, 2, 3 }, { 4, 5, 6, 7 },
                             { 8, 9, 10, 11 } };
     this->Glyph3D->InsertNextCell(VTK_QUAD, 4, ids[0]);
     this->Glyph3D->InsertNextCell(VTK_QUAD, 4, ids[1]);
@@ -347,7 +347,7 @@ void vtkPointGlyphMapperHelper::SetUpGlyph()
       this->Glyph2D->InsertNextCell(VTK_TRIANGLE, 3, tri);
       }
     }
-  else if (this->glyphType == Point || 
+  else if (this->glyphType == Point ||
            this->glyphType == Sphere)
     {
     vtkNew<vtkPoints> pts;
@@ -442,7 +442,7 @@ void vtkPointGlyphMapper::ReleaseGraphicsResources(vtkWindow *w)
 
 //----------------------------------------------------------------------------
 // Modifications:
-//  
+//
 //    Kathleen Biagas, Fri Jun  7 11:06:14 PDT 2019
 //    Tell superclass the scalar range, too. Needed by transparency actor.
 //----------------------------------------------------------------------------
@@ -457,7 +457,7 @@ void vtkPointGlyphMapper::SetScalarRange(double min, double max)
 
 //----------------------------------------------------------------------------
 // Modifications:
-//  
+//
 //    Kathleen Biagas, Fri Jun  7 11:06:14 PDT 2019
 //    Tell superclass the lut, too. Needed by transparency actor.
 //----------------------------------------------------------------------------
@@ -491,7 +491,7 @@ void vtkPointGlyphMapper::UpdatePointData()
       {
       this->GlyphMapper->SetInputConnection(this->NormalsFilter->GetOutputPort());
       }
-    else 
+    else
       {
       this->GlyphMapper->SetInputConnection(this->GlyphFilter->GetOutputPort());
       }
@@ -561,7 +561,7 @@ void vtkPointGlyphMapper::DataScalingOn(const string &sname, int varDim)
 
 //----------------------------------------------------------------------------
 // Modifications:
-//  
+//
 //    Kathleen Biagas, Fri Jun  7 11:06:14 PDT 2019
 //    Tell superclass too. Needed by transparency actor.
 //----------------------------------------------------------------------------
@@ -576,7 +576,7 @@ void vtkPointGlyphMapper::ColorByScalarOn(const string &sn)
 
 //----------------------------------------------------------------------------
 // Modifications:
-//  
+//
 //    Kathleen Biagas, Fri Jun  7 11:06:14 PDT 2019
 //    Tell superclass too. Needed by transparency actor.
 //----------------------------------------------------------------------------

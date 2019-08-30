@@ -150,6 +150,12 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             tubeRadiusVarRatio   != obj.tubeRadiusVarRatio ||
                             tubeResolution       != obj.tubeResolution ||
 
+                            pointType           != obj.pointType ||
+                            pointSizeVar        != obj.pointSizeVar ||
+                            pointSizeVarEnabled != obj.pointSizeVarEnabled ||
+                            pointSize           != obj.pointSize||
+                            pointSizePixels     != obj.pointSizePixels ||
+
                             tailStyle                != obj.tailStyle ||
                             headStyle                != obj.headStyle ||
                             endPointRatio            != obj.endPointRatio ||
@@ -163,8 +169,8 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             0 );
 
     //
-    // If we've switched to an opacity mode that contains transparency, we 
-    // need to re-compute the face and ghost removal. 
+    // If we've switched to an opacity mode that contains transparency, we
+    // need to re-compute the face and ghost removal.
     //
     OpacityType newOpacType = obj.GetOpacityType();
     bool alteringOpacChange = ((newOpacType != FullyOpaque &&

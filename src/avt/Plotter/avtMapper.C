@@ -223,6 +223,8 @@ avtMapper::SetUpTransparencyActor()
 //  Creation:   April 13, 2017
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Aug 27 08:21:05 PDT 2019
+//    Pass the mapper index to CreateMapper.
 //
 // ****************************************************************************
 
@@ -243,7 +245,7 @@ avtMapper::CreateActorMapperPairs(vtkDataSet **children)
             actors[i]  = NULL;
             continue;
         }
-        mappers[i] = CreateMapper();
+        mappers[i] = CreateMapper(i);
         vtkAlgorithmOutput * outputPort = InsertFilters(children[i], i);
         if (outputPort != NULL)
             mappers[i]->SetInputConnection(outputPort);
@@ -377,7 +379,7 @@ avtMapper::SetDefaultRange(void)
 //
 //  Purpose:
 //      A hook to allow derived types to insert their own types of mappers.
-// 
+//
 //  Returns:    A standard vtkDataSetMapper.
 //
 //  Programmer: Hank Childs
@@ -389,6 +391,32 @@ vtkDataSetMapper *
 avtMapper::CreateMapper(void)
 {
     return vtkDataSetMapper::New();
+}
+
+
+// ****************************************************************************
+//  Method: avtMapper::CreateMapper
+//
+//  Purpose:
+//      A hook to allow derived types to insert their own types of mappers.
+//      This version is for those that need to know the index of the mapper
+//      being created.
+//
+//  Arguments:
+//      unused  The index of the mapper being created.
+//
+//  Returns:
+//      The vtkDataSetMapper returned from CreateMapper with no index.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 26, 2019
+//
+// ****************************************************************************
+
+vtkDataSetMapper *
+avtMapper::CreateMapper(int)
+{
+    return CreateMapper();
 }
 
 

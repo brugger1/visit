@@ -373,7 +373,7 @@ QvisPointControl::typeComboBoxChanged(int type)
 // ****************************************************************************
 // Method: QvisPointControl::sizeVarToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that emits the pointSizeVarToggled signal.
 //
 // Arguments:
@@ -403,7 +403,7 @@ QvisPointControl::sizeVarToggled(bool val)
 // ****************************************************************************
 // Method: QvisPointControl::SetSize
 //
-// Purpose: 
+// Purpose:
 //   This method sets the value in the sizeLineEdit.
 //
 // Arguments:
@@ -448,7 +448,7 @@ QvisPointControl::SetPointSizePixels(int val)
 // ****************************************************************************
 // Method: QvisPointControl::UpdateSizeText
 //
-// Purpose: 
+// Purpose:
 //   Updates the size text.
 //
 // Programmer: Brad Whitlock
@@ -676,5 +676,41 @@ int
 QvisPointControl::GetPointType() const
 {
     return typeComboBox->currentIndex();
+}
+
+
+// ****************************************************************************
+// Method: QvisPointControl::SetPointTypeEnabled
+//
+// Purpose:
+//   Changes the enabled state of the PointType combo box.
+//
+// Programmer: Kathleen Biagas
+// Createion:  August 27, 2019
+//
+// ****************************************************************************
+
+void
+QvisPointControl::SetPointTypeEnabled(bool val)
+{
+    typeComboBox->setEnabled(val);
+}
+
+
+// ****************************************************************************
+// Method: QvisPointControl::SetPointTypeEnabled
+//
+// Purpose:
+//   Retrieves the enabled state of the PointType combo box.
+//
+// Programmer: Kathleen Biagas
+// Createion:  August 27, 2019
+//
+// ****************************************************************************
+
+bool
+QvisPointControl::GetPointTypeEnabled()
+{
+    return typeComboBox->isEnabled();
 }
 

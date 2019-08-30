@@ -20,10 +20,10 @@ class QvisVariableButton;
 //   This is a widget that encapsulates the individual point control
 //   buttons into a Point controls widget.
 //
-// Notes:      
+// Notes:
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   November 4, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   November 4, 2004
 //
 // Modifications:
 //   Brad Whitlock, Thu Dec 9 17:01:35 PST 2004
@@ -38,6 +38,10 @@ class QvisVariableButton;
 //
 //   Cyrus Harrison, Tue Jul  8 09:58:45 PDT 2008
 //   Initial Qt4 Port
+//
+//   Kathleen Biagas, Tue Aug 27 08:56:25 PDT 2019
+//   Added ability to change and retrieve the enabled state of the PointType
+//   control.
 //
 // ****************************************************************************
 
@@ -55,6 +59,8 @@ public:
     void SetPointSizeVarChecked(bool);
     void SetPointSizeVar(QString &);
     void SetPointType(int);
+    void SetPointTypeEnabled(bool);
+    bool GetPointTypeEnabled();
 
     double   GetPointSize();
     int      GetPointSizePixels();
