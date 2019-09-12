@@ -263,6 +263,11 @@ QvisIntegralCurveWindow::CreateWindowContents()
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Kathleen Biagas, Thu Sep 12 12:11:36 PDT 2019
+//   Changed all QLineEdits connection from 'returnPressed' signal to
+//   'editingFinished' (which is triggered when the widget loses focus as well
+//   as when return is pressed).
+//
 // ****************************************************************************
 
 void
@@ -309,7 +314,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // Create the widgets that specify a point source.
     int gRow = 0;
     pointSource = new QLineEdit(sourceGroup);
-    connect(pointSource, SIGNAL(returnPressed()),
+    connect(pointSource, SIGNAL(editingFinished()),
             this, SLOT(pointSourceProcessText()));
     pointSourceLabel = new QLabel(tr("Location"), sourceGroup);
     pointSourceLabel->setBuddy(pointSource);
@@ -342,7 +347,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // Create the widgets that specify a line source.
     gRow = 0;
     lineStart = new QLineEdit(sourceGroup);
-    connect(lineStart, SIGNAL(returnPressed()),
+    connect(lineStart, SIGNAL(editingFinished()),
             this, SLOT(lineStartProcessText()));
     lineStartLabel = new QLabel(tr("Start"), sourceGroup);
     lineStartLabel->setBuddy(lineStart);
@@ -350,7 +355,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     geometryLayout->addWidget(lineStart, gRow++, 1);
 
     lineEnd = new QLineEdit(sourceGroup);
-    connect(lineEnd, SIGNAL(returnPressed()),
+    connect(lineEnd, SIGNAL(editingFinished()),
             this, SLOT(lineEndProcessText()));
     lineEndLabel = new QLabel(tr("End"), sourceGroup);
     lineEndLabel->setBuddy(lineEnd);
@@ -360,7 +365,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // Create the widgets that specify a plane source.
     gRow = 0;
     planeOrigin = new QLineEdit(sourceGroup);
-    connect(planeOrigin, SIGNAL(returnPressed()),
+    connect(planeOrigin, SIGNAL(editingFinished()),
             this, SLOT(planeOriginProcessText()));
     planeOriginLabel = new QLabel(tr("Origin"), sourceGroup);
     planeOriginLabel->setBuddy(planeOrigin);
@@ -368,7 +373,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     geometryLayout->addWidget(planeOrigin, gRow++,1);
 
     planeNormal = new QLineEdit(sourceGroup);
-    connect(planeNormal, SIGNAL(returnPressed()),
+    connect(planeNormal, SIGNAL(editingFinished()),
             this, SLOT(planeNormalProcessText()));
     planeNormalLabel = new QLabel(tr("Normal"), sourceGroup);
     planeNormalLabel->setBuddy(planeNormal);
@@ -376,7 +381,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     geometryLayout->addWidget(planeNormal, gRow++,1);
 
     planeUpAxis = new QLineEdit(sourceGroup);
-    connect(planeUpAxis, SIGNAL(returnPressed()),
+    connect(planeUpAxis, SIGNAL(editingFinished()),
             this, SLOT(planeUpAxisProcessText()));
     planeUpAxisLabel = new QLabel(tr("Up axis"), sourceGroup);
     planeUpAxisLabel->setBuddy(planeUpAxis);
@@ -385,7 +390,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
 
     // Create the widgets that specify a sphere source.
     sphereOrigin = new QLineEdit(sourceGroup);
-    connect(sphereOrigin, SIGNAL(returnPressed()),
+    connect(sphereOrigin, SIGNAL(editingFinished()),
             this, SLOT(sphereOriginProcessText()));
     sphereOriginLabel = new QLabel(tr("Origin"), sourceGroup);
     sphereOriginLabel->setBuddy(sphereOrigin);
@@ -393,7 +398,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     geometryLayout->addWidget(sphereOrigin, gRow++,1);
 
     radius = new QLineEdit(sourceGroup);
-    connect(radius, SIGNAL(returnPressed()), this, SLOT(radiusProcessText()));
+    connect(radius, SIGNAL(editingFinished()), this, SLOT(radiusProcessText()));
     radiusLabel = new QLabel(tr("Radius"), sourceGroup);
     radiusLabel->setBuddy(radius);
     geometryLayout->addWidget(radiusLabel,gRow,0);
@@ -407,7 +412,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     geometryLayout->addWidget(useWholeBox, gRow++, 0);
 
     boxExtents[0] = new QLineEdit(sourceGroup);
-    connect(boxExtents[0], SIGNAL(returnPressed()),
+    connect(boxExtents[0], SIGNAL(editingFinished()),
             this, SLOT(boxExtentsProcessText()));
     boxExtentsLabel[0] = new QLabel(tr("X Extents"), sourceGroup);
     boxExtentsLabel[0]->setBuddy(boxExtents[0]);
@@ -415,7 +420,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     geometryLayout->addWidget(boxExtents[0], gRow++, 1);
 
     boxExtents[1] = new QLineEdit(sourceGroup);
-    connect(boxExtents[1], SIGNAL(returnPressed()),
+    connect(boxExtents[1], SIGNAL(editingFinished()),
             this, SLOT(boxExtentsProcessText()));
     boxExtentsLabel[1] = new QLabel(tr("Y Extents"), sourceGroup);
     boxExtentsLabel[1]->setBuddy(boxExtents[1]);
@@ -423,7 +428,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     geometryLayout->addWidget(boxExtents[1], gRow++, 1);
 
     boxExtents[2] = new QLineEdit(sourceGroup);
-    connect(boxExtents[2], SIGNAL(returnPressed()),
+    connect(boxExtents[2], SIGNAL(editingFinished()),
             this, SLOT(boxExtentsProcessText()));
     boxExtentsLabel[2] = new QLabel(tr("Z Extents"), sourceGroup);
     boxExtentsLabel[2]->setBuddy(boxExtents[2]);
@@ -526,6 +531,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sampleDensity[2]->setMinimum(1);
     sampleDensity[2]->setMaximum(10000000);
     sampleDensity[2]->setValue(atts->GetSampleDensity2());
+    connect(sampleDensity[0], SIGNAL(editingFinished()), this, SLOT(sampleDensity0Changed()));
     connect(sampleDensity[0], SIGNAL(valueChanged(int)), this, SLOT(sampleDensity0Changed(int)));
     connect(sampleDensity[1], SIGNAL(valueChanged(int)), this, SLOT(sampleDensity1Changed(int)));
     connect(sampleDensity[2], SIGNAL(valueChanged(int)), this, SLOT(sampleDensity2Changed(int)));
@@ -543,9 +549,9 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sampleDistance[0] = new QLineEdit(samplingGroup);
     sampleDistance[1] = new QLineEdit(samplingGroup);
     sampleDistance[2] = new QLineEdit(samplingGroup);
-    connect(sampleDistance[0], SIGNAL(returnPressed()), this, SLOT(sampleDistance0ProcessText()));
-    connect(sampleDistance[1], SIGNAL(returnPressed()), this, SLOT(sampleDistance1ProcessText()));
-    connect(sampleDistance[2], SIGNAL(returnPressed()), this, SLOT(sampleDistance2ProcessText()));
+    connect(sampleDistance[0], SIGNAL(editingFinished()), this, SLOT(sampleDistance0ProcessText()));
+    connect(sampleDistance[1], SIGNAL(editingFinished()), this, SLOT(sampleDistance1ProcessText()));
+    connect(sampleDistance[2], SIGNAL(editingFinished()), this, SLOT(sampleDistance2ProcessText()));
     samplingLayout->addWidget(sampleDistanceLabel[0], sRow, 0);
     samplingLayout->addWidget(sampleDistance[0], sRow, 1);
     samplingLayout->addWidget(sampleDistanceLabel[1], sRow, 2);
@@ -581,14 +587,14 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // Create the field constant text field.
     fieldConstantLabel = new QLabel(tr("Constant"), fieldGroup);
     fieldConstant = new QLineEdit(fieldGroup);
-    connect(fieldConstant, SIGNAL(returnPressed()), this,
+    connect(fieldConstant, SIGNAL(editingFinished()), this,
             SLOT(fieldConstantProccessText()));
     fieldLayout->addWidget(fieldConstantLabel, 0,2);
     fieldLayout->addWidget(fieldConstant, 0,3);
 
     // Create the widgets that specify a velocity source.
     velocitySource = new QLineEdit(fieldGroup);
-    connect(velocitySource, SIGNAL(returnPressed()),
+    connect(velocitySource, SIGNAL(editingFinished()),
             this, SLOT(velocitySourceProcessText()));
     velocitySourceLabel = new QLabel(tr("Velocity"), fieldGroup);
     velocitySourceLabel->setBuddy(velocitySource);
@@ -641,7 +647,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // Create the step length text field.
     maxStepLengthLabel = new QLabel(tr("Step length"), integrationGroup);
     maxStepLength = new QLineEdit(integrationGroup);
-    connect(maxStepLength, SIGNAL(returnPressed()),
+    connect(maxStepLength, SIGNAL(editingFinished()),
             this, SLOT(maxStepLengthProcessText()));
     integrationLayout->addWidget(maxStepLengthLabel, 2,0);
     integrationLayout->addWidget(maxStepLength, 2,1);
@@ -652,7 +658,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     integrationLayout->addWidget(limitMaxTimeStep, 3, 0);
     
     maxTimeStep = new QLineEdit(integrationGroup);
-    connect(maxTimeStep, SIGNAL(returnPressed()),
+    connect(maxTimeStep, SIGNAL(editingFinished()),
             this, SLOT(maxTimeStepProcessText()));
     integrationLayout->addWidget(maxTimeStep, 3,1);
 
@@ -666,7 +672,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // Create the relative tolerance text field.
     relTolLabel = new QLabel(tr("Relative tolerance"), toleranceGroup);
     relTol = new QLineEdit(toleranceGroup);
-    connect(relTol, SIGNAL(returnPressed()),
+    connect(relTol, SIGNAL(editingFinished()),
             this, SLOT(relTolProcessText()));
     toleranceLayout->addWidget(relTolLabel, 0, 0);
     toleranceLayout->addWidget(relTol, 0, 1);
@@ -674,7 +680,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // Create the absolute tolerance text field.
     absTolLabel = new QLabel(tr("Absolute tolerance"), toleranceGroup);
     absTol = new QLineEdit(toleranceGroup);
-    connect(absTol, SIGNAL(returnPressed()), this, SLOT(absTolProcessText()));
+    connect(absTol, SIGNAL(editingFinished()), this, SLOT(absTolProcessText()));
     toleranceLayout->addWidget(absTolLabel, 1, 0);
     toleranceLayout->addWidget(absTol, 1, 1);
 
@@ -696,7 +702,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     QLabel *maxStepsLabel = new QLabel(tr("Maximum number of steps"), terminationGroup);
     terminationLayout->addWidget(maxStepsLabel, 0,0);
     maxSteps = new QLineEdit(central);
-    connect(maxSteps, SIGNAL(returnPressed()),
+    connect(maxSteps, SIGNAL(editingFinished()),
             this, SLOT(maxStepsProcessText()));
     terminationLayout->addWidget(maxSteps, 0,1);
 
@@ -704,14 +710,14 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     connect(limitMaxTime, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeChanged(bool)));
     terminationLayout->addWidget(limitMaxTime, 1,0);
     maxTime = new QLineEdit(central);
-    connect(maxTime, SIGNAL(returnPressed()), this, SLOT(maxTimeProcessText()));
+    connect(maxTime, SIGNAL(editingFinished()), this, SLOT(maxTimeProcessText()));
     terminationLayout->addWidget(maxTime, 1,1);
 
     limitMaxDistance = new QCheckBox(tr("Limit maximum distance traveled by particles"), terminationGroup);
     connect(limitMaxDistance, SIGNAL(toggled(bool)), this, SLOT(limitMaxDistanceChanged(bool)));
     terminationLayout->addWidget(limitMaxDistance, 2,0);
     maxDistance = new QLineEdit(central);
-    connect(maxDistance, SIGNAL(returnPressed()), this, SLOT(maxDistanceProcessText()));
+    connect(maxDistance, SIGNAL(editingFinished()), this, SLOT(maxDistanceProcessText()));
     terminationLayout->addWidget(maxDistance, 2,1);
 }
 
@@ -743,6 +749,11 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
 // 
 //   Dave Pugmire, Mon Feb 21 08:17:42 EST 2011
 //   Add color by correlation distance.
+//
+//   Kathleen Biagas, Thu Sep 12 12:11:36 PDT 2019
+//   Changed all QLineEdits connection from 'returnPressed' signal to
+//   'editingFinished' (which is triggered when the widget loses focus as well
+//   as when return is pressed).
 //
 // ****************************************************************************
 
@@ -803,9 +814,9 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataLayout->addWidget(correlationDistanceMinDistLabel, 2, 0);
     dataLayout->addWidget(correlationDistanceMinDistEdit, 2, 1);
     dataLayout->addWidget(correlationDistanceMinDistType, 2, 2);
-    connect(correlationDistanceAngTolEdit, SIGNAL(returnPressed()),
+    connect(correlationDistanceAngTolEdit, SIGNAL(editingFinished()),
             this, SLOT(processCorrelationDistanceAngTolEditText()));
-    connect(correlationDistanceMinDistEdit, SIGNAL(returnPressed()),
+    connect(correlationDistanceMinDistEdit, SIGNAL(editingFinished()),
             this, SLOT(processCorrelationDistanceMinDistEditText()));
 
     // Create the cleanup group
@@ -832,7 +843,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     cleanupLayout->addWidget(cleanupThresholdLabel, 0, 2);
 
     cleanupThreshold = new QLineEdit(cleanupGrp);
-    connect(cleanupThreshold, SIGNAL(returnPressed()), this, SLOT(cleanupThresholdProcessText()));
+    connect(cleanupThreshold, SIGNAL(editingFinished()), this, SLOT(cleanupThresholdProcessText()));
     cleanupLayout->addWidget(cleanupThreshold, 0, 3);
     
     // Create the crop group
@@ -860,7 +871,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     cropLayout->addWidget(cropBeginFlag, 1, 0);
 
     cropBegin = new QLineEdit(cropGrp);
-    connect(cropBegin, SIGNAL(returnPressed()), this, SLOT(cropBeginProcessText()));
+    connect(cropBegin, SIGNAL(editingFinished()), this, SLOT(cropBeginProcessText()));
     cropLayout->addWidget(cropBegin, 1, 1);
 
 
@@ -869,7 +880,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     cropLayout->addWidget(cropEndFlag, 1, 2);
 
     cropEnd = new QLineEdit(cropGrp);
-    connect(cropEnd, SIGNAL(returnPressed()), this, SLOT(cropEndProcessText()));
+    connect(cropEnd, SIGNAL(editingFinished()), this, SLOT(cropEndProcessText()));
     cropLayout->addWidget(cropEnd, 1, 3);
 
     // Streamlines/Pathline Group.
@@ -909,7 +920,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     pathlineOverrideStartingTimeLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
     pathlineOptionsGrpLayout->addWidget(pathlineOverrideStartingTimeLabel, 1, 1);
     pathlineOverrideStartingTime = new QLineEdit(pathlineOptionsGrp);
-    connect(pathlineOverrideStartingTime, SIGNAL(returnPressed()),
+    connect(pathlineOverrideStartingTime, SIGNAL(editingFinished()),
             this, SLOT(pathlineOverrideStartingTimeProcessText()));
     pathlineOptionsGrpLayout->addWidget(pathlineOverrideStartingTime, 1, 2);
 
@@ -917,7 +928,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     pathlinePeriodLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
     pathlineOptionsGrpLayout->addWidget(pathlinePeriodLabel, 1, 3);
     pathlinePeriod = new QLineEdit(pathlineOptionsGrp);
-    connect(pathlinePeriod, SIGNAL(returnPressed()),
+    connect(pathlinePeriod, SIGNAL(editingFinished()),
             this, SLOT(pathlinePeriodProcessText()));
     pathlineOptionsGrpLayout->addWidget(pathlinePeriod, 1, 4);
 
@@ -963,6 +974,11 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
 //   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
+//   Kathleen Biagas, Thu Sep 12 12:11:36 PDT 2019
+//   Changed all QLineEdits connection from 'returnPressed' signal to
+//   'editingFinished' (which is triggered when the widget loses focus as well
+//   as when return is pressed).
 //
 // ****************************************************************************
 
@@ -1084,7 +1100,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(criticalPointThresholdLabel, 9, 1);
     criticalPointThreshold = new QLineEdit(warningsGrp);
     criticalPointThreshold->setAlignment(Qt::AlignLeft);
-    connect(criticalPointThreshold, SIGNAL(returnPressed()),
+    connect(criticalPointThreshold, SIGNAL(editingFinished()),
             this, SLOT(criticalPointThresholdProcessText()));
     warningsGLayout->addWidget(criticalPointThreshold, 9, 2);
 }
