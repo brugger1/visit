@@ -159,7 +159,7 @@
 //    Kevin Griffin, Tue Aug 5 15:01:27 PDT 2014
 //    Added q_criterion and lambda2
 //
-//    Eddie Rusu, Wed Sep 11 08:59:52 PDT 2019
+//    Eddie Rusu, Mon Sep 23 10:33:50 PDT 2019
 //    Added "divide" function under the "Math" menu.
 //
 // ****************************************************************************
@@ -1603,7 +1603,7 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Brad Whitlock, Wed Sep 12 17:21:19 PDT 2012
 //    Add bin expression.
 //
-//    Eddie Rusu, Wed Sep 11 08:59:52 PDT 2019
+//    Eddie Rusu, Mon Sep 23 10:33:50 PDT 2019
 //    Added divide expression with optional arguments.
 //
 // ****************************************************************************

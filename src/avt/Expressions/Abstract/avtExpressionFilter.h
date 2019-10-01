@@ -90,7 +90,7 @@ class     ExprNode;
 //    Kathleen Biagas, Thu Apr 5 10:07:43 PDT 2012
 //    Added CreateArrayFromMesh.
 //
-//    Eddie Rusu, Wed Sep 11 08:59:52 PDT 2019
+//    Eddie Rusu, Mon Sep 23 10:26:24 PDT 2019
 //    Added nProcessedArgs to keep track of the number of arguments that this
 //    filter processes in ProcessArguments().
 //
@@ -125,8 +125,8 @@ class EXPRESSION_API avtExpressionFilter : virtual public
   protected:
     char                    *outputVariableName;
     int                      currentTimeState;
-    int                      nProcessedArgs;
     bool                     calculateExtents;
+    int                      nProcessedArgs;
 
     virtual bool             IsPointVariable();
 
