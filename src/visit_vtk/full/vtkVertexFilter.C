@@ -14,9 +14,15 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkVisItUtility.h>
 
+#include <map>
+#include <vector>
+
+using std::map;
+using std::vector;
+
 // **************************************************************************
 //  Modifications:
-//    Kathleen Bonnell, Wed Mar  6 17:10:03 PST 2002 
+//    Kathleen Bonnell, Wed Mar  6 17:10:03 PST 2002
 //    Replace 'New' method with Macro to match VTK 4.0 API.
 // **************************************************************************
 
@@ -38,8 +44,8 @@ vtkVertexFilter::vtkVertexFilter()
 //    Eric Brugger, Tue May 14 15:27:24 PDT 2002
 //    Modified to work properly with cell centered variables.
 //
-//    Kathleen Bonnell, Wed Oct 20 17:10:21 PDT 2004 
-//    Use vtkVisItUtility method to compute cell center. 
+//    Kathleen Bonnell, Wed Oct 20 17:10:21 PDT 2004
+//    Use vtkVisItUtility method to compute cell center.
 //
 //    Hank Childs, Fri Jun  9 13:13:20 PDT 2006
 //    Remove unused variable.
@@ -52,6 +58,9 @@ vtkVertexFilter::vtkVertexFilter()
 //
 //    Eric Brugger, Thu Jan 10 12:18:23 PST 2013
 //    Modified to inherit from vtkPolyDataAlgorithm.
+//
+//    Kathleen Biagas, Wed Oct 2 14:49:22 MST 2019
+//    Interpolate cell data to points if VertexAtPoints is on.
 //
 // ****************************************************************************
 
@@ -81,6 +90,7 @@ vtkVertexFilter::RequestData(
   vtkPointData *inPd = input->GetPointData();
 
   vtkPointData  *outPD = output->GetPointData();
+  vtkCellData   *outCD = output->GetCellData();
 
   int nPts   = input->GetNumberOfPoints();
   int nCells = input->GetNumberOfCells();
@@ -93,6 +103,7 @@ vtkVertexFilter::RequestData(
     // We want to put vertices at each of the points, but only if the vertices
     // are incident to a cell.
     int *lookupList = new int[nPts];
+    map<int, vector<int> > cellLookupMap;
     for (i = 0 ; i < nPts ; i++)
       {
       lookupList[i] = 0;
@@ -106,6 +117,8 @@ vtkVertexFilter::RequestData(
         {
         int id = cell->GetPointId(j);
         lookupList[id] = 1;
+        // store cell ids that correspond this this vertex
+        cellLookupMap[id].push_back(i);
         }
       }
 
@@ -120,7 +133,10 @@ vtkVertexFilter::RequestData(
 
     outPts->SetNumberOfPoints(nOutPts);
     outPD->CopyAllocate(inPd, nOutPts);
+    outCD->InterpolateAllocate(inCd, nOutPts);
     int count = 0;
+    vtkNew<vtkIdList> cellIds;
+    vector<double> weights;
     for (i = 0 ; i < nPts ; i++)
       {
       if (lookupList[i] != 0)
@@ -129,6 +145,16 @@ vtkVertexFilter::RequestData(
         input->GetPoint(i, pt);
         outPts->SetPoint(count, pt);
         outPD->CopyData(inPd, i, count);
+        // traverse cellIds associated with this point and interpolate
+        cellIds->Initialize();
+        for (int j = 0; j < cellLookupMap[i].size(); ++j)
+        {
+            cellIds->InsertId(j, cellLookupMap[i][j]);
+            // InterpolatePoint requires weights, so just fill in 1,
+            // not sure if this is best, but it works for now
+            weights.push_back(1.);
+        }
+        outCD->InterpolatePoint(inCd, i, cellIds, &weights[0]);
         count++;
         }
       }
@@ -137,7 +163,7 @@ vtkVertexFilter::RequestData(
     }
   else
     {
-    // Make an output vertex at each point.
+    // Make an output vertex at each cell.
     nOutPts = nCells;
     outPts->SetNumberOfPoints(nOutPts);
     outPD->CopyAllocate(inCd, nOutPts);
@@ -189,7 +215,7 @@ vtkVertexFilter::RequestData(
   outPts->Delete();
   return 1;
 }
-  
+
 // ****************************************************************************
 //  Method: vtkVertexFilter::FillInputPortInformation
 //

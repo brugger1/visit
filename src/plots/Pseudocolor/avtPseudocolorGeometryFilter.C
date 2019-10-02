@@ -22,6 +22,7 @@
 #include <vtkSphereSource.h>
 #include <vtkTubeFilter.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVertexFilter.h>
 
 #include <string>
 
@@ -218,10 +219,13 @@ avtPseudocolorGeometryFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         glyphingLines = false;
         glyphingEnds = false;
     }
-    if (glyphingVerts && inPolys->GetNumberOfVerts() < 1)
+    if (!plotAtts.GetRenderPoints() &&
+        (glyphingVerts && inPolys->GetNumberOfVerts() < 1))
     {
         avtCallback::IssueWarning("Applying glyphing to points only works"
-            " on poly data or unstructured grids containing VERTEX cells.");
+            " on poly data or unstructured grids containing VERTEX cells."
+            " If you want to glyph all the points, turn on "
+            "'Draw objects as Points'");
         glyphingVerts = false;
     }
     if (!glyphingLines && !glyphingEnds && !glyphingVerts)
@@ -234,7 +238,8 @@ avtPseudocolorGeometryFilter::ExecuteDataTree(avtDataRepresentation *inDR)
     //
     vtkPolyData *linesData = inPolys;
     bool removeLinesFromInput = false;
-    if ((glyphingLines || glyphingEnds) && inPolys->GetNumberOfLines() < inPolys->GetNumberOfCells())
+    if ((glyphingLines || glyphingEnds) &&
+        inPolys->GetNumberOfLines() < inPolys->GetNumberOfCells())
     {
         vtkNew<vtkExtractCellsByType> extractLines;
         extractLines->AddCellType(VTK_LINE);
@@ -283,15 +288,30 @@ avtPseudocolorGeometryFilter::ExecuteDataTree(avtDataRepresentation *inDR)
     vtkNew<vtkPolyData> vertsData;
 
     bool removeVertsFromInput = false;
-    if (glyphingVerts && inPolys->GetNumberOfVerts() < inPolys->GetNumberOfCells())
+    if (glyphingVerts)
     {
-        vtkNew<vtkExtractCellsByType> extractVerts;
-        extractVerts->AddCellType(VTK_VERTEX);
-        extractVerts->AddCellType(VTK_POLY_VERTEX);
-        extractVerts->SetInputData(inPolys);
-        extractVerts->Update();
-        vertsData->ShallowCopy(extractVerts->GetOutput());
-        removeVertsFromInput = true;
+        if (plotAtts.GetRenderPoints())
+        {
+            // Need to create a new dataset with vertex cells
+            // for all the points.
+            vtkNew<vtkVertexFilter> createVerts;
+            createVerts->VertexAtPointsOn();
+            createVerts->SetInputData(inPolys);
+            createVerts->Update();
+            vertsData->ShallowCopy(createVerts->GetOutput());
+            removeVertsFromInput = true;
+        }
+        else if (inPolys->GetNumberOfVerts() < inPolys->GetNumberOfCells())
+        {
+            // Need to extract only vertex cells to a new dataset
+            vtkNew<vtkExtractCellsByType> extractVerts;
+            extractVerts->AddCellType(VTK_VERTEX);
+            extractVerts->AddCellType(VTK_POLY_VERTEX);
+            extractVerts->SetInputData(inPolys);
+            extractVerts->Update();
+            vertsData->ShallowCopy(extractVerts->GetOutput());
+            removeVertsFromInput = true;
+        }
     }
     else if (glyphingVerts && inPolys->GetNumberOfVerts() == inPolys->GetNumberOfCells())
     {
