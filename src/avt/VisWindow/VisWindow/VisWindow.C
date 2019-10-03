@@ -7533,6 +7533,9 @@ VisWindow::ResumeTranslucentGeometry()
 //   Changed support for unglyphed point meshes slightly.  It will now
 //   also select nearest points even in the presence of line segment cells.
 //
+//   Kathleen Biagas, Thu Oct  3 15:37:09 MST 2019
+//   Retrieve bounds from mapper instead of the mapper's input. 
+//
 // ****************************************************************************
 void
 VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom, int &elNum, 
@@ -7580,7 +7583,11 @@ VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom,
                        << " is NULL!" << endl;
                 continue;
             }
-            bnds = ds->GetBounds();
+            // Since this is a glphed pick, use the mapper bounds which should
+            // be more accurate than the mapper's input dataset bounds.
+            // vtkPointGlyphMapper has been modified to return a more accurate
+            // bounds.
+            bnds = actor->GetMapper()->GetBounds();
             if (vtkBox::IntersectBox(bnds, r1, dir, dummy1, dummy2))
             {
                 if (ds->GetNumberOfPoints() == 0)

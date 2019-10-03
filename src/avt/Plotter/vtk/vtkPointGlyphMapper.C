@@ -631,4 +631,28 @@ bool vtkPointGlyphMapper::SetFullFrameScaling(bool useScale, const double *s)
   return false;
 }
 
+//----------------------------------------------------------------------------
+//  Kathleen Biagas, Thursday Oct 3, 2019
+//  Retrieve the bounds from the correct underlying mapper.
+//----------------------------------------------------------------------------
 
+double * vtkPointGlyphMapper::GetBounds()
+{
+  if (this->Helper->GetGlyphType() == Point ||
+      this->Helper->GetGlyphType() == Sphere)
+    {
+    return this->PointMapper->GetBounds();
+    }
+  else
+    {
+    return this->GlyphMapper->GetBounds();
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkPointGlyphMapper::GetBounds(double b[6])
+{
+    double *bnds = this->GetBounds();
+    for (int i = 0; i < 6; ++i)
+        b[i] = bnds[i];
+}

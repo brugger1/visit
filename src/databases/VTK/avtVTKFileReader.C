@@ -1284,6 +1284,9 @@ avtVTKFileReader::GetVectorVar(int domain, const char *var)
 //    determining if the topological dimension should be lowered. Lack of
 //    points indicates an empty dataset.
 //
+//    Kathleen Biagas, Thu Oct 3 15:26:39 MST 2019
+//    Set meshtype to POINT_MESH for vtkPolyData containing only vertex cells.
+//
 // ****************************************************************************
 
 void
@@ -1397,9 +1400,16 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             if (pd->GetNumberOfPolys() == 0 && pd->GetNumberOfStrips() == 0)
             {
                 if (pd->GetNumberOfLines() > 0)
+                {
                     topo = 1;
+                }
                 else
+                {
+                    debug5 << "The VTK file format contains all points -- "
+                           << "declaring this a point mesh." << endl;
+                    type = AVT_POINT_MESH;
                     topo = 0;
+                }
             }
         }
     }

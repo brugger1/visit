@@ -71,7 +71,9 @@ class vtkVisItPolyDataNormals;
 //  Creation:   August 17, 2016
 //
 //  Modifications:
-//
+//  Kathleen Biagas, Thursday Oct 3, 2019
+//  Added GetBounds override methods.
+// 
 // ****************************************************************************
 
 class PLOTTER_API vtkPointGlyphMapper : public vtkPolyDataMapper
@@ -99,6 +101,9 @@ public:
   void ColorByScalarOn(const std::string &);
   void ColorByScalarOff(void);
   bool SetFullFrameScaling(bool useScale, const double *s);
+
+  double *GetBounds() override;
+  void    GetBounds(double b[6]) override;
 
 protected:
   vtkPointGlyphMapper();
