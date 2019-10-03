@@ -119,10 +119,11 @@ avtPseudocolorMapper::CustomizeMappers()
                 GetInput()->GetInfo().GetAttributes().GetSpatialDimension());
             pm->SetLookupTable(avtPointMapper::pmLUT);
             pm->SetGlyphType(avtPointMapper::glyphType);
-            if (avtPointMapper::colorByScalar)
-                pm->ColorByScalarOn(avtPointMapper::coloringVarName);
-            else
+            if(drawPoints)
                 pm->ColorByScalarOff();
+            else
+                pm->ColorByScalarOn(avtPointMapper::coloringVarName);
+            actors[i]->GetProperty()->SetColor(pointsColor);
         }
         actors[i]->GetProperty()->SetPointSize(pointSize);
     }
@@ -341,8 +342,17 @@ avtPseudocolorMapper::SetPointsColor(double rgb[3])
         pointsColor[2] = rgb[2];
         for (int i = 0; i < nMappers; ++i)
         {
-            if (mappers[i] != NULL && mappers[i]->IsA("vtkMultiRepMapper"))
-                ((vtkMultiRepMapper *)mappers[i])->SetPointsColor(pointsColor);
+            if (mappers[i] != NULL)
+            {
+                 if (mappers[i]->IsA("vtkMultiRepMapper"))
+                 {
+                     ((vtkMultiRepMapper *)mappers[i])->SetPointsColor(pointsColor);
+                 }
+                 else //if (mappers[i]->IsA("vtkPointGlyphMapper"))
+                 {
+                     actors[i]->GetProperty()->SetColor(pointsColor);
+                 }
+            }
         }
     }
 }

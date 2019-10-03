@@ -312,10 +312,10 @@ avtPseudocolorGeometryFilter::ExecuteDataTree(avtDataRepresentation *inDR)
             vertsData->ShallowCopy(extractVerts->GetOutput());
             removeVertsFromInput = true;
         }
-    }
-    else if (glyphingVerts && inPolys->GetNumberOfVerts() == inPolys->GetNumberOfCells())
-    {
-        vertsData->ShallowCopy(inPolys);
+        else if (inPolys->GetNumberOfVerts() == inPolys->GetNumberOfCells())
+        {
+            vertsData->ShallowCopy(inPolys);
+        }
     }
 
 
