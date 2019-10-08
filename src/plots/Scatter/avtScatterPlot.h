@@ -59,7 +59,7 @@ class avtScatterFilter;
 //      A concrete type of avtPlot for scatter plots of scalar variables.
 //
 //  Programmer: Brad Whitlock
-//  Creation:   Tue Nov 2 21:52:32 PST 2004 
+//  Creation:   Tue Nov 2 21:52:32 PST 2004
 //
 //  Modifications:
 //   Brad Whitlock, Thu Jul 21 15:29:40 PST 2005
@@ -67,6 +67,9 @@ class avtScatterFilter;
 //
 //   Kathleen Biagas, Wed Feb 29 13:10:11 MST 2012
 //   Add GetExtraInfoForPick.
+//
+//   Kathleen Biagas, Mon Oct 7 17:29:39 MST 2019
+//   Add PlotHasBeenGlyphed.
 //
 // ****************************************************************************
 
@@ -94,6 +97,8 @@ public:
 
     virtual const MapNode &GetExtraInfoForPick(void);
 
+    virtual bool    PlotHasBeenGlyphed();
+
 protected:
     avtVariablePointGlyphMapper     *glyphMapper;
     avtVariableLegend               *varLegend;
@@ -110,7 +115,7 @@ protected:
     virtual avtDataObject_p  ApplyRenderingTransformation(avtDataObject_p);
     virtual void             CustomizeBehavior(void);
     virtual avtLegend_p      GetLegend(void) { return varLegendRefPtr; };
-    virtual avtContract_p     
+    virtual avtContract_p
                              EnhanceSpecification(avtContract_p);
 
 

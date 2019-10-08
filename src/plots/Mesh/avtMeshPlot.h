@@ -153,6 +153,9 @@ class     avtVariablePointGlyphMapper;
 //    Kathleen Biagas, Wed May 11 08:48:51 PDT 2016
 //    Remove custom renderer in favor of native renderers in VTK-7.
 //
+//    Kathleen Biagas, Mon Oct  7 17:27:07 MST 2019
+//    Added PlotHasBeenGlyphed. 
+//
 // ****************************************************************************
 
 class
@@ -187,6 +190,8 @@ avtMeshPlot : public avtPlot
     virtual bool    NeedZBufferToCompositeEvenIn2D(void);
 
     virtual const MapNode &GetExtraInfoForPick(void);
+
+    virtual bool    PlotHasBeenGlyphed();
 
   protected:
     avtMeshPlotMapper               *mapper;
