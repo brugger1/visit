@@ -92,6 +92,10 @@ avtPseudocolorMapper::CreateMapper(int index)
 //    Kathleen Biagas, Tue Aug 27 09:19:30 PDT 2019
 //    Use label to determine which underlying mapper and settings to use.
 //
+//    Kathleen Biagas, Mon Oct 14 19:17:28 PDT 2019
+//    Only have vtkMultiRepMapper DrawPoints if glyph type is Point, otherwise
+//    it will be handled by the vtkPointGlyphMapper.
+//
 // ****************************************************************************
 
 void
@@ -108,7 +112,7 @@ avtPseudocolorMapper::CustomizeMappers()
             vtkMultiRepMapper *mrm = (vtkMultiRepMapper*)mappers[i];
             mrm->SetDrawSurface(drawSurface);
             mrm->SetDrawWireframe(drawWireframe);
-            mrm->SetDrawPoints(drawPoints);
+            mrm->SetDrawPoints(drawPoints && avtPointMapper::glyphType == Point);
             mrm->SetWireframeColor(wireframeColor);
             mrm->SetPointsColor(pointsColor);
         }
@@ -219,6 +223,9 @@ avtPseudocolorMapper::SetDrawWireframe(bool val)
 //    Kathleen Biagas, Tue Aug 20 16:59:20 PDT 2019
 //    Only apply this setting to the non-glyphed datasets.
 //
+//    Only have vtkMultiRepMapper DrawPoints if glyph type is Point, otherwise
+//    it will be handled by the vtkPointGlyphMapper.
+//
 // ****************************************************************************
 
 void
@@ -233,7 +240,8 @@ avtPseudocolorMapper::SetDrawPoints(bool val)
                 continue;
 
             if (labels.empty() || labels[i].compare(0, 9, string("pc_polys_")) == 0)
-                ((vtkMultiRepMapper *)mappers[i])->SetDrawPoints(drawPoints);
+                ((vtkMultiRepMapper *)mappers[i])->SetDrawPoints(drawPoints &&
+                                              avtPointMapper::glyphType == Point);
         }
     }
 }
