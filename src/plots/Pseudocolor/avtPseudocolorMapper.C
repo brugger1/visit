@@ -405,3 +405,31 @@ avtPseudocolorMapper::SetLookupTable(vtkLookupTable *LUT)
     avtPointMapper::SetLUT(LUT);
 }
 
+
+// ****************************************************************************
+//  Method: avtPseudocolorMapper::TurnLightingOn
+//
+//  Purpose:
+//     Tells the vtkMultiRepMapper to turn on lighting.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   October 14, 2019
+//
+// ****************************************************************************
+
+void
+avtPseudocolorMapper::TurnLightingOn(void)
+{
+    lighting = true;
+
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL)
+        {
+            if(mappers[i]->IsA("vtkMultiRepMapper"))
+                ((vtkMultiRepMapper *)mappers[i])->
+                    TurnLightingOn(actors[i]->GetProperty());
+        }
+    }
+}
+

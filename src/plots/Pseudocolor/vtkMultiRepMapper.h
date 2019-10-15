@@ -8,6 +8,8 @@
 
 #include <vtkDataSetMapper.h>
 
+class vtkProperty;
+
 // A Mapper that allows multiple representations (Surface, Wireframe, Points)
 // to be drawn at the same time, via multi-pass renders.
 //
@@ -38,6 +40,7 @@ public:
   vtkSetVector3Macro(PointsColor, double);
   vtkGetVector3Macro(PointsColor, double);
 
+  void TurnLightingOn(vtkProperty *);
 
 protected:
   vtkMultiRepMapper();

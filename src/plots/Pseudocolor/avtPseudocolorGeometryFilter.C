@@ -214,18 +214,12 @@ avtPseudocolorGeometryFilter::ExecuteDataTree(avtDataRepresentation *inDR)
     //
     if ((glyphingLines || glyphingEnds) && inPolys->GetNumberOfLines() < 1)
     {
-        avtCallback::IssueWarning("Applying tubes/ribbons/endpoints only works"
-            " on poly data or unstructured grids containing LINE cells.");
         glyphingLines = false;
         glyphingEnds = false;
     }
     if (!plotAtts.GetRenderPoints() &&
         (glyphingVerts && inPolys->GetNumberOfVerts() < 1))
     {
-        avtCallback::IssueWarning("Applying glyphing to points only works"
-            " on poly data or unstructured grids containing VERTEX cells."
-            " If you want to glyph all the points, turn on "
-            "'Draw objects as Points'");
         glyphingVerts = false;
     }
     if (!glyphingLines && !glyphingEnds && !glyphingVerts)

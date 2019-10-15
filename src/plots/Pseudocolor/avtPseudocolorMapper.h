@@ -33,6 +33,9 @@
 //    Derive from avtVariablePointGlyphMapper.
 //    Added SetLookupTable and labels.
 //
+//    Kathleen Biagas, Mon Oct 14 20:26:00 PDT 2019
+//    Add TurnLightingOn, to override avtVariableMapper::TurnLightingOn.
+//
 // ****************************************************************************
 
 class avtPseudocolorMapper : public avtVariablePointGlyphMapper
@@ -49,6 +52,7 @@ class avtPseudocolorMapper : public avtVariablePointGlyphMapper
     void                       SetPointsColor(double rgb[3]);
     void                       SetLookupTable(vtkLookupTable *);
 
+    void                       TurnLightingOn(void);
 
   protected:
     // these are called from avtMapper

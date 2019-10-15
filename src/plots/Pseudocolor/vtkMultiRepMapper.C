@@ -32,11 +32,6 @@ vtkMultiRepMapper::~vtkMultiRepMapper()
 }
 
 //----------------------------------------------------------------------------
-//  Modifications:
-//    Kathleen Biagas, Tue Aug 20 10:10:42 PDT 2019
-//    Ensure ambient and diffuse properties are set appropriately.
-//
-//----------------------------------------------------------------------------
 void vtkMultiRepMapper::Render(vtkRenderer *ren, vtkActor *act)
 {
   if (this->DrawSurface)
@@ -50,8 +45,6 @@ void vtkMultiRepMapper::Render(vtkRenderer *ren, vtkActor *act)
     this->ScalarVisibilityOff();
     act->GetProperty()->SetRepresentationToWireframe();
     act->GetProperty()->SetColor(this->WireframeColor);
-    act->GetProperty()->SetAmbient(1);
-    act->GetProperty()->SetDiffuse(0);
     this->Superclass::Render(ren,act);
     this->SetScalarVisibility(sv);
     }
@@ -61,8 +54,6 @@ void vtkMultiRepMapper::Render(vtkRenderer *ren, vtkActor *act)
     this->ScalarVisibilityOff();
     act->GetProperty()->SetRepresentationToPoints();
     act->GetProperty()->SetColor(this->PointsColor);
-    act->GetProperty()->SetAmbient(1);
-    act->GetProperty()->SetDiffuse(0);
     this->Superclass::Render(ren,act);
     this->SetScalarVisibility(sv);
     }
@@ -82,4 +73,28 @@ void vtkMultiRepMapper::PrintSelf(ostream& os, vtkIndent indent)
                          << this->PointsColor[2] ;
   this->Superclass::PrintSelf(os, indent);
 
+}
+
+//-----------------------------------------------------------------------------
+void
+vtkMultiRepMapper::TurnLightingOn(vtkProperty *prop)
+{
+    if(this->DrawSurface)
+    {
+        // This method can get called multiple times.  If there are
+        // multiple lights, then blindly calling SetAmbient to 0.0 may
+        // turn off an ambient light that augments a normal light.  So
+        // only set the default lighting attributes if we know we are
+        // in "unlit" mode, which would mean diffuse would be not 1.0.
+        if (prop->GetDiffuse() != 1.0)
+        {
+            prop->SetAmbient(0.0);
+            prop->SetDiffuse(1.0);
+        }
+    }
+    else // don't want lighting if only drawing lines or points
+    {
+        prop->SetAmbient(1.0);
+        prop->SetDiffuse(0.0);
+    }
 }
